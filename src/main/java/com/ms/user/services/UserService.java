@@ -1,9 +1,11 @@
 package com.ms.user.services;
 
+import com.ms.user.dtos.UserRecordDTO;
 import com.ms.user.models.UserModel;
 import com.ms.user.producers.UserProducer;
 import com.ms.user.repositories.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ public class UserService {
 
     @Transactional
     public UserModel save(UserModel userModel) {
+//        Optional<UserModel> user = userRepository.findById(userModel.getUserId());
+
         userModel = userRepository.save(userModel);
         userProducer.publishMessageEmail(userModel);
         return userModel;
@@ -38,6 +42,16 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public ResponseEntity<Object> updateUser(UUID id, UserRecordDTO userRecordDTO) {
+        Optional<UserModel> user = userRepository.findById(id);
+        if(user.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        }
+        var userModel = user.get();
+        BeanUtils.copyProperties(userRecordDTO, userModel);
+        return ResponseEntity.status(HttpStatus.OK).body(userRepository.save(userModel));
+    }
+
     public ResponseEntity<String> deleteUser(UUID id) {
         Optional<UserModel> user = userRepository.findById(id);
         if(user.isEmpty()) {
@@ -46,5 +60,4 @@ public class UserService {
         userRepository.delete((user.get()));
         return ResponseEntity.status(HttpStatus.OK).body("User deleted sucessfully");
     }
-
 }
