@@ -23,7 +23,8 @@ public class UserModel implements Serializable {
     private UUID userId;
     private String name;
     private String email;
-
+    private String password;
+    private String phone;
 
 
 }
